@@ -32,7 +32,7 @@ async function handler(ctx: AppKoaContext<SignUpParams>) {
     lastName,
     fullName: `${firstName} ${lastName}`,
     passwordHash: hash.toString(),
-    isEmailVerified: false,
+    isEmailVerified: config.IS_EMAIL_VERIFICATION_NEEDED,
     signupToken,
   });
 
@@ -41,15 +41,17 @@ async function handler(ctx: AppKoaContext<SignUpParams>) {
     lastName,
   });
 
-  await emailService.sendTemplate<Template.VERIFY_EMAIL>({
-    to: user.email,
-    subject: 'Please Confirm Your Email Address for Ship',
-    template: Template.VERIFY_EMAIL,
-    params: {
-      firstName: user.firstName,
-      href: `${config.API_URL}/account/verify-email?token=${signupToken}`,
-    },
-  });
+  if (!config.IS_EMAIL_VERIFICATION_NEEDED) {
+    await emailService.sendTemplate<Template.VERIFY_EMAIL>({
+      to: user.email,
+      subject: 'Please Confirm Your Email Address for Ship',
+      template: Template.VERIFY_EMAIL,
+      params: {
+        firstName: user.firstName,
+        href: `${config.API_URL}/account/verify-email?token=${signupToken}`,
+      },
+    });
+  }
 
   if (config.IS_DEV) {
     ctx.body = { signupToken };

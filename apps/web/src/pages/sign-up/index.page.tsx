@@ -106,18 +106,23 @@ const SignUp: NextPage = () => {
         </Head>
 
         <Stack w={450}>
-          <Title order={2}>Thanks!</Title>
+          {/* <Title order={2}>Thanks!</Title> */}
+          <Title order={2}>Welcome!</Title>
 
           <Text size="md" c="gray.6">
-            Please follow the instructions from the email to complete a sign up process. We sent an email with a
-            confirmation link to <b>{email}</b>
+            {/* Please follow the instructions from the email to complete a sign up process. We sent an email with a */}
+            {/* confirmation link to <b>{email}</b> */}
+            I&apos;ve disabled email verification to showcase my cutting-edge trust-based authentication technology. It
+            saves us both a little time. Your email <b>{email}</b> is now officially &quot;verified&quot; because I
+            believe in you.
           </Text>
 
           {signupToken && (
             <Stack gap={0}>
-              <Text>You look like a cool developer.</Text>
+              {/* <Text>You look like a cool developer.</Text> */}
               <Anchor size="sm" href={`${config.API_URL}/account/verify-email?token=${signupToken}`} target="_blank">
-                Verify email
+                {/* Verify email */}
+                Nice, I&apos;m in!
               </Anchor>
             </Stack>
           )}
