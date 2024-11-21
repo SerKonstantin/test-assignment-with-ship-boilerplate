@@ -27,7 +27,15 @@ const schema = z.object({
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().optional(),
   IS_EMAIL_VERIFICATION_NEEDED: z.preprocess((val) => val === 'true', z.boolean()).default(true),
+  USE_REMOTE_DB: z.preprocess((val) => val === 'true', z.boolean()).default(false),
 });
+
+// This is a workaround to use selected DB based on USE_REMOTE_DB env variable
+// In real app I would do it with separate .env files for development and production
+process.env.MONGO_URI =
+  process.env.USE_REMOTE_DB === 'true' ? process.env.MONGO_REMOTE_URI : process.env.MONGO_LOCAL_URI;
+process.env.MONGO_DB_NAME =
+  process.env.USE_REMOTE_DB === 'true' ? process.env.MONGO_REMOTE_DB_NAME : process.env.MONGO_LOCAL_DB_NAME;
 
 type Config = z.infer<typeof schema>;
 

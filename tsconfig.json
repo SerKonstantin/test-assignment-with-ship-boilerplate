@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "api/*": ["apps/api/*"],
+      "web/*": ["apps/web/*"]
+    }
+  },
+  "references": [{ "path": "apps/api" }, { "path": "apps/web" }],
+  "files": [],
+  "include": ["apps/api/src/**/*"]
+}
