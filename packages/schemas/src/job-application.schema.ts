@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import dbSchema from './db.schema';
-import { JobApplicationStatus } from './jobApplication.status';
+import { JobApplicationStatus } from './job-application.status';
 
 const statusEnum = z.nativeEnum(JobApplicationStatus);
 
