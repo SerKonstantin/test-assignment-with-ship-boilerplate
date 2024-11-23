@@ -1,5 +1,6 @@
 import Router from '@koa/router';
-import { User } from 'app-types';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { JobApplication, User } from 'app-types';
 import Koa, { Next, ParameterizedContext, Request } from 'koa';
 import { Template } from 'mailer';
 

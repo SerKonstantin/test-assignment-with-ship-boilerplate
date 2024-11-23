@@ -13,7 +13,7 @@ export const jobApplicationSchema = dbSchema
       .min(1, 'Укажите название компании')
       .min(3, 'Название компании должно содержать не менее 3 символов')
       .max(100),
-    vacancy: z
+    position: z
       .string()
       .min(1, 'Укажите название вакансии')
       .min(2, 'Название вакансии должно содержать не менее 2 символов')
@@ -42,6 +42,3 @@ export const createJobApplicationSchema = jobApplicationSchema
 
 // Update dto
 export const updateJobApplicationSchema = createJobApplicationSchema.partial();
-
-// Update status dto
-export const updateStatusSchema = jobApplicationSchema.pick({ status: true });
