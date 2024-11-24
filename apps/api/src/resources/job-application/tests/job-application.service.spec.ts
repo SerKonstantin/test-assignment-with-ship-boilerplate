@@ -31,12 +31,15 @@ describe('Job application Unit Tests', () => {
   });
 
   describe('validate schema', () => {
-    test.each([{ company: 'ab' }, { position: 'a' }, { salaryMin: -1 }, { salaryMax: -1 }])(
-      'should fail',
-      async (invalidData) => {
-        await expect(jobApplicationService.insertOne({ ...testData, ...invalidData })).rejects.toThrow();
-      },
-    );
+    test.each([
+      { field: 'company', value: 'ab' },
+      { field: 'position', value: 'a' },
+      { field: 'salaryMin', value: -1 },
+      { field: 'salaryMax', value: -1 },
+    ])('should fail inserting value $value in field $field', async ({ field, value }) => {
+      const invalidData = { [field]: value };
+      await expect(jobApplicationService.insertOne({ ...testData, ...invalidData })).rejects.toThrow();
+    });
   });
 
   describe('create job application', () => {
@@ -146,6 +149,27 @@ describe('Job application Unit Tests', () => {
       expect(result?.salaryMin).toBe(testData.salaryMin); // Unchanged
       expect(result?.salaryMax).toBe(testData.salaryMax);
       expect(result?.notes).toBe(testData.notes);
+    });
+  });
+
+  describe('delete job application', () => {
+    it('should delete job application', async () => {
+      const testDataToDelete = { ...testData, _id: 'delete-test-id' };
+      await jobApplicationService.insertOne(testDataToDelete);
+
+      const beforeDelete = await jobApplicationService.exists({
+        _id: testDataToDelete._id,
+      });
+
+      expect(beforeDelete).toBe(true);
+
+      await jobApplicationService.deleteOne({ _id: testDataToDelete._id });
+
+      const afterDelete = await jobApplicationService.exists({
+        _id: testDataToDelete._id,
+      });
+
+      expect(afterDelete).toBe(false);
     });
   });
 
