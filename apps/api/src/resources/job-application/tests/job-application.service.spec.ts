@@ -85,6 +85,70 @@ describe('Job application Unit Tests', () => {
     });
   });
 
+  describe('update job application', () => {
+    type TestDataKeys = keyof typeof testData;
+    // Exclude timestamp fields
+    const fieldsToCompare: TestDataKeys[] = [
+      'company',
+      'position',
+      'salaryMin',
+      'salaryMax',
+      'status',
+      'notes',
+      'userId',
+      '_id',
+    ];
+
+    beforeEach(async () => {
+      await jobApplicationService.insertOne(testData);
+    });
+
+    test.each<{ field: TestDataKeys; value: JobApplication[TestDataKeys] }>([
+      { field: 'company', value: 'Updated company' },
+      { field: 'position', value: 'Updated position' },
+      { field: 'salaryMin', value: 1100 },
+      { field: 'salaryMax', value: 1900 },
+      { field: 'status', value: JobApplicationStatus.OFFER },
+      { field: 'notes', value: 'Updated notes' },
+    ])('should update $field', async ({ field, value }) => {
+      const updateData = { [field]: value };
+
+      await jobApplicationService.updateOne({ _id: testData._id }, () => updateData);
+
+      const result = await jobApplicationService.findOne({ _id: testData._id });
+
+      expect(result).not.toBeNull();
+      expect(result?.[field]).toBe(value);
+
+      // Check other fields remained unchanged
+      fieldsToCompare.forEach((key) => {
+        if (key !== field) {
+          expect(result?.[key]).toBe(testData[key]);
+        }
+      });
+    });
+
+    it('should update multiple fields', async () => {
+      const updateData = {
+        company: 'Multi Update Company',
+        position: 'Multi Update Position',
+        status: JobApplicationStatus.REJECTED,
+      };
+
+      await jobApplicationService.updateOne({ _id: testData._id }, () => updateData);
+
+      const result = await jobApplicationService.findOne({ _id: testData._id });
+
+      expect(result).not.toBeNull();
+      expect(result?.company).toBe(updateData.company);
+      expect(result?.position).toBe(updateData.position);
+      expect(result?.status).toBe(updateData.status);
+      expect(result?.salaryMin).toBe(testData.salaryMin); // Unchanged
+      expect(result?.salaryMax).toBe(testData.salaryMax);
+      expect(result?.notes).toBe(testData.notes);
+    });
+  });
+
   afterAll(async () => {
     await database.close();
   });
