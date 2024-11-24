@@ -3,20 +3,25 @@ import { jobApplicationService } from 'resources/job-application';
 import { validateMiddleware } from 'middlewares';
 
 import { createJobApplicationSchema } from 'schemas';
-import { AppKoaContext, AppRouter, CreateJobApplicationParams } from 'types';
+import { AppKoaContext, AppRouter, CreateJobApplicationParams, Next } from 'types';
 
-async function handler(ctx: AppKoaContext<CreateJobApplicationParams>) {
+async function validator(ctx: AppKoaContext<CreateJobApplicationParams>, next: Next) {
   if (!ctx.state.user?._id) {
     ctx.throw(401, 'Unauthorized');
   }
 
+  if (ctx.validatedData.salaryMax < ctx.validatedData.salaryMin) {
+    ctx.assertClientError(false, {
+      maxSalary: 'Максимальная зарплата не может быть меньше минимальной',
+    });
+  }
+
+  await next();
+}
+
+async function handler(ctx: AppKoaContext<CreateJobApplicationParams>) {
   const data = ctx.validatedData;
   const userId = ctx.state.user._id;
-
-  // TODO: This validation should be moved to the schema or service, place it here for quick implementation
-  if (data.salaryMax < data.salaryMin) {
-    ctx.throw(400, { clientErrors: { salary: ['Максимальная зарплата не может быть меньше минимальной'] } });
-  }
 
   const jobApplication = await jobApplicationService.insertOne({ ...data, userId });
 
@@ -25,5 +30,5 @@ async function handler(ctx: AppKoaContext<CreateJobApplicationParams>) {
 }
 
 export default (router: AppRouter) => {
-  router.post('/', validateMiddleware(createJobApplicationSchema), handler);
+  router.post('/', validateMiddleware(createJobApplicationSchema), validator, handler);
 };
