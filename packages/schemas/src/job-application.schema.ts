@@ -23,6 +23,7 @@ export const jobApplicationSchema = dbSchema
     status: statusEnum.default(JobApplicationStatus.APPLIED),
     notes: z.string().optional().default(''),
     userId: z.string(),
+    sortIndex: z.number().default(0),
   })
   .strip();
 

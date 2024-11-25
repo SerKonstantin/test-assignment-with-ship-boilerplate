@@ -11,9 +11,7 @@ import { AppKoaContext, AppRouter, JobApplication, NestedKeys } from 'types';
 const schema = z.object({
   searchValue: z.string().optional(),
   sort: z.object({
-    company: z.enum(['asc', 'desc']).optional(),
-    position: z.enum(['asc', 'desc']).optional(),
-    createdOn: z.enum(['asc', 'desc']).default('asc'),
+    sortIndex: z.enum(['asc', 'desc']).default('asc'),
   }),
 });
 
