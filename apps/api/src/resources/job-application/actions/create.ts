@@ -12,7 +12,7 @@ async function validator(ctx: AppKoaContext<CreateJobApplicationParams>, next: N
 
   if (ctx.validatedData.salaryMax < ctx.validatedData.salaryMin) {
     ctx.assertClientError(false, {
-      maxSalary: 'Максимальная зарплата не может быть меньше минимальной',
+      global: 'Максимальная зарплата не может быть меньше минимальной',
     });
   }
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NextPage } from 'next';
 import Head from 'next/head';
 import { Button, Group, Paper, SimpleGrid, Skeleton, Stack, Text, Title } from '@mantine/core';
@@ -14,6 +14,8 @@ import queryClient from 'query-client';
 import { JobApplicationStatus } from 'schemas';
 import { ApiError } from 'types';
 
+import CreateJobApplicationModal from './components/create-job-application-modal';
+
 const JobApplications: NextPage = () => {
   // TODO: temporary disable linter here, we will need to set params for search/filter
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -25,30 +27,28 @@ const JobApplications: NextPage = () => {
   const { data: applications, isLoading } = jobApplicationApi.useList(params);
   const { mutate: updateApplication } = jobApplicationApi.useUpdate();
 
+  const [opened, setOpened] = useState(false);
+
   const columnData = [
     {
       status: JobApplicationStatus.APPLIED,
       title: 'Отклик',
       applications: applications?.results?.filter((app) => app.status === JobApplicationStatus.APPLIED) || [],
-      showAddButton: true,
     },
     {
       status: JobApplicationStatus.INTERVIEW,
       title: 'Интервью',
       applications: applications?.results?.filter((app) => app.status === JobApplicationStatus.INTERVIEW) || [],
-      showAddButton: true,
     },
     {
       status: JobApplicationStatus.OFFER,
       title: 'Оффер',
       applications: applications?.results?.filter((app) => app.status === JobApplicationStatus.OFFER) || [],
-      showAddButton: true,
     },
     {
       status: JobApplicationStatus.REJECTED,
       title: 'Отказ',
       applications: applications?.results?.filter((app) => app.status === JobApplicationStatus.REJECTED) || [],
-      showAddButton: false,
     },
   ];
 
@@ -112,25 +112,22 @@ const JobApplications: NextPage = () => {
       <Stack gap="lg">
         <Group justify="space-between">
           <Title order={2}>Job Applications</Title>
+          <Group>
+            <Button onClick={() => setOpened(true)}>Добавить отклик</Button>
+            <Button variant="light" color="red">
+              Удалить все отказы
+            </Button>
+          </Group>
         </Group>
 
         <DragDropContext onDragEnd={handleDragEnd}>
           <SimpleGrid cols={4}>
-            {columnData.map(({ status, title, applications: columnApplications, showAddButton }) => (
+            {columnData.map(({ status, title, applications: columnApplications }) => (
               <Droppable key={status} droppableId={status}>
                 {(provided) => (
                   <Paper p="md" withBorder ref={provided.innerRef} {...provided.droppableProps}>
                     <Group justify="space-between" mb="md">
                       <Title order={4}>{title}</Title>
-                      {showAddButton ? (
-                        <Button variant="light" size="xs">
-                          +
-                        </Button>
-                      ) : (
-                        <Button variant="light" size="xs" color="red">
-                          🗑
-                        </Button>
-                      )}
                     </Group>
 
                     {columnApplications.map((application, index) => (
@@ -161,6 +158,8 @@ const JobApplications: NextPage = () => {
           </SimpleGrid>
         </DragDropContext>
       </Stack>
+
+      <CreateJobApplicationModal opened={opened} onClose={() => setOpened(false)} />
     </>
   );
 };
