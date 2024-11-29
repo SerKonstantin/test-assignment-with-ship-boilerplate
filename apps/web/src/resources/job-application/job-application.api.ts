@@ -40,11 +40,7 @@ export const useCreate = () =>
 
 export const useUpdate = () =>
   useMutation<JobApplication, ApiError, { id: string; data: UpdateJobApplicationParams }>({
-    mutationFn: ({ id, data }: { id: string; data: UpdateJobApplicationParams }) =>
-      apiService.patch(`/job-applications/${id}`, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['job-applications'] });
-    },
+    mutationFn: ({ id, data }) => apiService.patch(`/job-applications/${id}`, data),
   });
 
 export const useDelete = () =>
