@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { memo, useState } from 'react';
 import { NextPage } from 'next';
 import Head from 'next/head';
 import { Button, Group, Paper, SimpleGrid, Skeleton, Stack, Text, Title } from '@mantine/core';
 import { useSetState } from '@mantine/hooks';
-import { DragDropContext, Draggable, DragUpdate, Droppable, DropResult } from '@hello-pangea/dnd';
+import { DragDropContext, Draggable, Droppable, DropResult } from '@hello-pangea/dnd';
 
 import { jobApplicationApi, JobApplicationsListParams } from 'resources/job-application';
 
@@ -23,69 +23,78 @@ const COLUMN_DEFINITIONS = [
   { status: JobApplicationStatus.REJECTED, title: 'Отказ' },
 ];
 
-const ApplicationCard = ({ application, index }: { application: JobApplication; index: number }) => (
+const ApplicationCard = memo(({ application, index }: { application: JobApplication; index: number }) => (
   <Draggable draggableId={application._id} index={index}>
-    {(dragProvided) => (
+    {(provided) => (
       <Paper
         p="sm"
         withBorder
         mb="sm"
-        ref={dragProvided.innerRef}
-        {...dragProvided.draggableProps}
-        {...dragProvided.dragHandleProps}
+        ref={provided.innerRef}
+        {...provided.draggableProps}
+        {...provided.dragHandleProps}
       >
         <Text fw={500}>{application.company}</Text>
         <Text size="sm">{application.position}</Text>
         <Text size="xs" c="dimmed">
           ${application.salaryMin} - ${application.salaryMax}
         </Text>
+        <Text size="xs" c="blue">
+          Debug: sortIndex={application.sortIndex}, index={index}
+        </Text>
       </Paper>
     )}
   </Draggable>
-);
+));
 
-const ApplicationColumn = ({
-  status,
-  title,
-  applications,
-}: {
-  status: JobApplicationStatus;
-  title: string;
-  applications: JobApplication[];
-}) => (
-  <Droppable droppableId={status}>
-    {(provided) => (
-      <Paper p="md" withBorder ref={provided.innerRef} {...provided.droppableProps}>
-        <Group justify="space-between" mb="md">
-          <Title order={4}>{title}</Title>
-        </Group>
-        {applications.map((application, index) => (
-          <ApplicationCard key={application._id} application={application} index={index} />
-        ))}
-        {provided.placeholder}
-      </Paper>
-    )}
-  </Droppable>
+const ApplicationColumn = memo(
+  ({
+    status,
+    title,
+    applications: columnApplications,
+  }: {
+    status: JobApplicationStatus;
+    title: string;
+    applications: JobApplication[];
+  }) => (
+    <Droppable droppableId={status}>
+      {(provided) => (
+        <Paper p="md" withBorder ref={provided.innerRef} {...provided.droppableProps}>
+          <Group justify="space-between" mb="md">
+            <Title order={4}>{title}</Title>
+          </Group>
+          {columnApplications.map((application, index) => (
+            <ApplicationCard key={application._id} application={application} index={index} />
+          ))}
+          {provided.placeholder}
+        </Paper>
+      )}
+    </Droppable>
+  ),
 );
 
 const calculateNewSortIndex = (
   destinationColumn: { applications: JobApplication[] },
   destination: { index: number },
+  draggableId: string,
 ) => {
-  if (destinationColumn.applications.length === 0) {
+  const applications = destinationColumn.applications.filter((app) => app._id !== draggableId);
+
+  if (applications.length === 0) {
     return 1000;
   }
+
   if (destination.index === 0) {
-    return destinationColumn.applications[0].sortIndex - 1000;
+    return applications[0].sortIndex - 1000;
   }
-  if (destination.index >= destinationColumn.applications.length) {
-    return destinationColumn.applications[destinationColumn.applications.length - 1].sortIndex + 1000;
+
+  if (destination.index >= applications.length) {
+    return applications[applications.length - 1].sortIndex + 1000;
   }
-  return (
-    (destinationColumn.applications[destination.index - 1].sortIndex +
-      destinationColumn.applications[destination.index].sortIndex) /
-    2
-  );
+
+  const prevCard = applications[destination.index - 1];
+  const nextCard = applications[destination.index];
+  return prevCard.sortIndex + (nextCard.sortIndex - prevCard.sortIndex) / 2;
 };
 
 const JobApplications: NextPage = () => {
@@ -95,17 +104,19 @@ const JobApplications: NextPage = () => {
     searchValue: '',
     sort: { sortIndex: 'asc' },
   });
+  const [opened, setOpened] = useState(false);
 
+  // Get/Update applications from server
   const { data: applications, isLoading } = jobApplicationApi.useList(params);
   const { mutate: updateApplication } = jobApplicationApi.useUpdate();
-
-  const [opened, setOpened] = useState(false);
 
   // Filter applications to columns by status
   const columnData = COLUMN_DEFINITIONS.map(({ status, title }) => ({
     status,
     title,
-    applications: applications?.results?.filter((app) => app.status === status) || [],
+    applications: (applications?.results?.filter((app) => app.status === status) || []).sort(
+      (a, b) => a.sortIndex - b.sortIndex,
+    ),
   }));
 
   const handleDragEnd = (result: DropResult) => {
@@ -117,20 +128,23 @@ const JobApplications: NextPage = () => {
 
     if (!sourceColumn || !destinationColumn) return;
 
-    // Get the current data for potential rollback
+    // Save the current data for potential rollback
     const previousData = queryClient.getQueryData(['job-applications', params]);
 
-    const newSortIndex = calculateNewSortIndex(destinationColumn, destination);
+    const newSortIndex = calculateNewSortIndex(destinationColumn, destination, draggableId);
     const updatedApplication = {
       status: destination.droppableId as JobApplicationStatus,
       sortIndex: newSortIndex,
     };
 
+    // Update the cache locally and wait if server response is ok
+    queryClient.setQueryData(['job-applications', params], (old: ListResult<JobApplication>) => ({
+      ...old,
+      results: old.results.map((app) => (app._id === draggableId ? { ...app, ...updatedApplication } : app)),
+    }));
+
     updateApplication(
-      {
-        id: draggableId,
-        data: updatedApplication,
-      },
+      { id: draggableId, data: updatedApplication },
       {
         onError: (error) => {
           // Rollback to saved data
@@ -139,20 +153,6 @@ const JobApplications: NextPage = () => {
         },
       },
     );
-  };
-
-  const onDragUpdate = (update: DragUpdate) => {
-    if (!update.destination) return;
-
-    const { draggableId } = update;
-
-    // Update the position immediately during drag
-    queryClient.setQueryData(['job-applications', params], (old: ListResult<JobApplication>) => ({
-      ...old,
-      results: old.results.map((app: JobApplication) =>
-        app._id === draggableId ? { ...app, status: update.destination?.droppableId as JobApplicationStatus } : app,
-      ),
-    }));
   };
 
   if (isLoading) {
@@ -182,10 +182,10 @@ const JobApplications: NextPage = () => {
           </Group>
         </Group>
 
-        <DragDropContext onDragEnd={handleDragEnd} onDragUpdate={onDragUpdate}>
+        <DragDropContext onDragEnd={handleDragEnd}>
           <SimpleGrid cols={4}>
-            {columnData.map(({ status, title, applications: columnApplications }) => (
-              <ApplicationColumn key={status} status={status} title={title} applications={columnApplications} />
+            {columnData.map(({ status, title, applications: columnApps }) => (
+              <ApplicationColumn key={status} status={status} title={title} applications={columnApps} />
             ))}
           </SimpleGrid>
         </DragDropContext>
