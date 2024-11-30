@@ -28,10 +28,10 @@ export const ApplicationCard = memo(({ application, index, onCardClick }: Applic
           ${application.salaryMin} - ${application.salaryMax}
         </Text>
 
-        {/* TODO: remove after debugging */}
-        <Text size="xs" c="blue">
+        {/* Debugging section, comment out to see sorting indexes */}
+        {/* <Text size="xs" c="blue">
           Debug: sortIndex={application.sortIndex}, index={index}
-        </Text>
+        </Text> */}
       </Paper>
     )}
   </Draggable>
