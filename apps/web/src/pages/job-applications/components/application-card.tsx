@@ -1,8 +1,11 @@
 import React, { memo } from 'react';
 import { Paper, Text } from '@mantine/core';
 import { Draggable } from '@hello-pangea/dnd';
+import cx from 'clsx';
 
 import { JobApplication } from 'types';
+
+import classes from './application-card.module.css';
 
 interface ApplicationCardProps {
   application: JobApplication;
@@ -12,8 +15,9 @@ interface ApplicationCardProps {
 
 export const ApplicationCard = memo(({ application, index, onCardClick }: ApplicationCardProps) => (
   <Draggable draggableId={application._id} index={index}>
-    {(provided) => (
+    {(provided, snapshot) => (
       <Paper
+        className={cx(classes.card, { [classes.dragging]: snapshot.isDragging })}
         p="sm"
         withBorder
         mb="sm"

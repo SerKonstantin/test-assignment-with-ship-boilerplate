@@ -1,0 +1,12 @@
+.card {
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.card:hover {
+  background-color: var(--mantine-color-gray-1);
+}
+
+.dragging {
+  background-color: var(--mantine-color-gray-1);
+}
