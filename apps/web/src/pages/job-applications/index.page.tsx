@@ -15,6 +15,7 @@ import { JobApplicationStatus } from 'schemas';
 import { JobApplication, ListResult } from 'types';
 
 import CreateJobApplicationModal from './components/create-job-application-modal';
+import JobApplicationDetailModal from './components/job-application-detail-modal';
 
 const COLUMN_DEFINITIONS = [
   { status: JobApplicationStatus.APPLIED, title: 'Отклик' },
@@ -23,39 +24,52 @@ const COLUMN_DEFINITIONS = [
   { status: JobApplicationStatus.REJECTED, title: 'Отказ' },
 ];
 
-const ApplicationCard = memo(({ application, index }: { application: JobApplication; index: number }) => (
-  <Draggable draggableId={application._id} index={index}>
-    {(provided) => (
-      <Paper
-        p="sm"
-        withBorder
-        mb="sm"
-        ref={provided.innerRef}
-        {...provided.draggableProps}
-        {...provided.dragHandleProps}
-      >
-        <Text fw={500}>{application.company}</Text>
-        <Text size="sm">{application.position}</Text>
-        <Text size="xs" c="dimmed">
-          ${application.salaryMin} - ${application.salaryMax}
-        </Text>
-        <Text size="xs" c="blue">
-          Debug: sortIndex={application.sortIndex}, index={index}
-        </Text>
-      </Paper>
-    )}
-  </Draggable>
-));
+const ApplicationCard = memo(
+  ({
+    application,
+    index,
+    onCardClick,
+  }: {
+    application: JobApplication;
+    index: number;
+    onCardClick: (clickedApp: JobApplication) => void;
+  }) => (
+    <Draggable draggableId={application._id} index={index}>
+      {(provided) => (
+        <Paper
+          p="sm"
+          withBorder
+          mb="sm"
+          ref={provided.innerRef}
+          onClick={() => onCardClick(application)}
+          {...provided.draggableProps}
+          {...provided.dragHandleProps}
+        >
+          <Text fw={500}>{application.position}</Text>
+          <Text size="sm">{application.company}</Text>
+          <Text size="xs" c="dimmed">
+            ${application.salaryMin} - ${application.salaryMax}
+          </Text>
+          <Text size="xs" c="blue">
+            Debug: sortIndex={application.sortIndex}, index={index}
+          </Text>
+        </Paper>
+      )}
+    </Draggable>
+  ),
+);
 
 const ApplicationColumn = memo(
   ({
     status,
     title,
     applications: columnApplications,
+    onCardClick,
   }: {
     status: JobApplicationStatus;
     title: string;
     applications: JobApplication[];
+    onCardClick: (clickedApp: JobApplication) => void;
   }) => (
     <Droppable droppableId={status}>
       {(provided) => (
@@ -64,7 +78,7 @@ const ApplicationColumn = memo(
             <Title order={4}>{title}</Title>
           </Group>
           {columnApplications.map((application, index) => (
-            <ApplicationCard key={application._id} application={application} index={index} />
+            <ApplicationCard key={application._id} application={application} index={index} onCardClick={onCardClick} />
           ))}
           {provided.placeholder}
         </Paper>
@@ -98,13 +112,15 @@ const calculateNewSortIndex = (
 };
 
 const JobApplications: NextPage = () => {
+  const [selectedApplication, setSelectedApplication] = useState<JobApplication | null>(null);
   // TODO: temporary disable linter here, we will need to set params for search/filter
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [params, setParams] = useSetState<JobApplicationsListParams>({
     searchValue: '',
     sort: { sortIndex: 'asc' },
   });
-  const [opened, setOpened] = useState(false);
+  const [openedCreate, setOpenedCreate] = useState(false);
+  const [openedDetail, setOpenedDetail] = useState(false);
 
   // Get/Update applications from server
   const { data: applications, isLoading } = jobApplicationApi.useList(params);
@@ -175,9 +191,9 @@ const JobApplications: NextPage = () => {
         <Group justify="space-between">
           <Title order={2}>Job Applications</Title>
           <Group>
-            <Button onClick={() => setOpened(true)}>Добавить отклик</Button>
+            <Button onClick={() => setOpenedCreate(true)}>Добавить отклик</Button>
             <Button variant="light" color="red">
-              Удалить все отказы
+              Удалиь все отказы
             </Button>
           </Group>
         </Group>
@@ -185,13 +201,32 @@ const JobApplications: NextPage = () => {
         <DragDropContext onDragEnd={handleDragEnd}>
           <SimpleGrid cols={4}>
             {columnData.map(({ status, title, applications: columnApps }) => (
-              <ApplicationColumn key={status} status={status} title={title} applications={columnApps} />
+              <ApplicationColumn
+                key={status}
+                status={status}
+                title={title}
+                applications={columnApps}
+                onCardClick={(clickedApp) => {
+                  setSelectedApplication(clickedApp);
+                  setOpenedDetail(true);
+                }}
+              />
             ))}
           </SimpleGrid>
         </DragDropContext>
       </Stack>
 
-      <CreateJobApplicationModal opened={opened} onClose={() => setOpened(false)} />
+      <CreateJobApplicationModal opened={openedCreate} onClose={() => setOpenedCreate(false)} />
+      {selectedApplication && (
+        <JobApplicationDetailModal
+          opened={openedDetail}
+          onClose={() => {
+            setOpenedDetail(false);
+            setSelectedApplication(null);
+          }}
+          application={selectedApplication}
+        />
+      )}
     </>
   );
 };

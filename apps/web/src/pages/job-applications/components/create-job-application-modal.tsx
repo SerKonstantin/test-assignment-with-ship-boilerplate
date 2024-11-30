@@ -80,7 +80,7 @@ const CreateJobApplicationModal = ({ opened, onClose }: CreateJobApplicationModa
           </Group>
 
           <Select
-            label="Status"
+            label="Статус"
             data={[
               { value: JobApplicationStatus.APPLIED, label: 'Отклик' },
               { value: JobApplicationStatus.INTERVIEW, label: 'Интервью' },
