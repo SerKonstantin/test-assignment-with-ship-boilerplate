@@ -9,7 +9,7 @@ import { handleApiError } from 'utils';
 import { JobApplication } from 'types';
 
 import { JOB_APPLICATION_STATUS_LABELS } from '../constants/status';
-import DeleteConfirmationModal from './delete-job-application-modal';
+import DeleteJobApplicationModal from './delete-job-application-modal';
 
 interface JobApplicationDetailModalProps {
   opened: boolean;
@@ -86,7 +86,7 @@ const JobApplicationDetailModal = ({ opened, onClose, application, onUpdate }: J
         </Stack>
       </Modal>
 
-      <DeleteConfirmationModal
+      <DeleteJobApplicationModal
         opened={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleDelete}

@@ -10,12 +10,14 @@ import { jobApplicationApi, JobApplicationsListParams } from 'resources/job-appl
 import { JobApplicationStatus } from 'schemas';
 import { JobApplication } from 'types';
 
-import { ApplicationColumn } from './components/application-column';
-import CreateJobApplicationModal from './components/create-job-application-modal';
-import JobApplicationDetailModal from './components/job-application-detail-modal';
-import UpdateJobApplicationModal from './components/update-job-application-modal';
 import { JOB_APPLICATION_STATUS_LABELS } from './constants/status';
 import { useDrag } from './scripts/use-drag';
+import {
+  ApplicationColumn,
+  CreateJobApplicationModal,
+  JobApplicationDetailModal,
+  UpdateJobApplicationModal,
+} from './components';
 
 const COLUMN_DEFINITIONS = Object.entries(JOB_APPLICATION_STATUS_LABELS).map(([status, title]) => ({
   status: status as JobApplicationStatus,
@@ -59,12 +61,12 @@ const JobApplications: NextPage = () => {
   return (
     <>
       <Head>
-        <title>Job Applications</title>
+        <title>Вакансии</title>
       </Head>
 
       <Stack gap="lg">
         <Group justify="space-between">
-          <Title order={2}>Job Applications</Title>
+          <Title order={2}>Вакансии</Title>
           <Group>
             <Button onClick={() => setOpenedCreate(true)}>Добавить отклик</Button>
             <Button variant="light" color="red">
