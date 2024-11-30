@@ -93,6 +93,8 @@ const CreateJobApplicationModal = ({ opened, onClose }: CreateJobApplicationModa
             label="Заметка"
             placeholder="Любая дополнительная информация"
             error={errors.notes?.message}
+            minRows={4}
+            autosize
             {...register('notes')}
           />
 

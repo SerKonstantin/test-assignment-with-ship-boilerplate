@@ -107,6 +107,8 @@ const UpdateJobApplicationModal = ({ opened, onClose, application, onSuccess }: 
             label="Заметка"
             placeholder="Любая дополнительная информация"
             error={errors.notes?.message}
+            minRows={4}
+            autosize
             {...register('notes')}
           />
 
