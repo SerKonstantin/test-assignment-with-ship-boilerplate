@@ -16,13 +16,12 @@ import { JobApplication, ListResult } from 'types';
 
 import CreateJobApplicationModal from './components/create-job-application-modal';
 import JobApplicationDetailModal from './components/job-application-detail-modal';
+import { JOB_APPLICATION_STATUS_LABELS } from './constants/status';
 
-const COLUMN_DEFINITIONS = [
-  { status: JobApplicationStatus.APPLIED, title: 'Отклик' },
-  { status: JobApplicationStatus.INTERVIEW, title: 'Интервью' },
-  { status: JobApplicationStatus.OFFER, title: 'Оффер' },
-  { status: JobApplicationStatus.REJECTED, title: 'Отказ' },
-];
+const COLUMN_DEFINITIONS = Object.entries(JOB_APPLICATION_STATUS_LABELS).map(([status, title]) => ({
+  status: status as JobApplicationStatus,
+  title,
+}));
 
 const ApplicationCard = memo(
   ({

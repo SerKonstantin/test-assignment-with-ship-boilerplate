@@ -2,15 +2,9 @@ import React from 'react';
 import { Button, Group, Modal, Stack, Text } from '@mantine/core';
 import { IconPencil, IconTrash } from '@tabler/icons-react';
 
-import { JobApplicationStatus } from 'schemas';
 import { JobApplication } from 'types';
 
-const STATUSES = {
-  [JobApplicationStatus.APPLIED]: 'Отклик',
-  [JobApplicationStatus.INTERVIEW]: 'Интервью',
-  [JobApplicationStatus.OFFER]: 'Оффер',
-  [JobApplicationStatus.REJECTED]: 'Отказ',
-};
+import { JOB_APPLICATION_STATUS_LABELS } from '../constants/status';
 
 interface JobApplicationDetailModalProps {
   opened: boolean;
@@ -47,7 +41,7 @@ const JobApplicationDetailModal = ({ opened, onClose, application }: JobApplicat
 
       <Group>
         <LabelText>Статус:</LabelText>
-        <Text>{STATUSES[application.status] || application.status}</Text>
+        <Text>{JOB_APPLICATION_STATUS_LABELS[application.status]}</Text>
       </Group>
 
       <Group align="flex-start">

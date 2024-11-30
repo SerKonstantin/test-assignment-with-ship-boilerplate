@@ -10,6 +10,8 @@ import { handleApiError } from 'utils';
 import { createJobApplicationSchema, JobApplicationStatus } from 'schemas';
 import { CreateJobApplicationParams } from 'types';
 
+import { JOB_APPLICATION_STATUS_OPTIONS } from '../constants/status';
+
 interface CreateJobApplicationModalProps {
   opened: boolean;
   onClose: () => void;
@@ -81,12 +83,7 @@ const CreateJobApplicationModal = ({ opened, onClose }: CreateJobApplicationModa
 
           <Select
             label="Статус"
-            data={[
-              { value: JobApplicationStatus.APPLIED, label: 'Отклик' },
-              { value: JobApplicationStatus.INTERVIEW, label: 'Интервью' },
-              { value: JobApplicationStatus.OFFER, label: 'Оффер' },
-              { value: JobApplicationStatus.REJECTED, label: 'Отказ' },
-            ]}
+            data={JOB_APPLICATION_STATUS_OPTIONS}
             defaultValue={JobApplicationStatus.APPLIED}
             onChange={(value) => value && setValue('status', value as JobApplicationStatus)}
             error={errors.status?.message}
