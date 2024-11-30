@@ -13,8 +13,9 @@ import { JobApplication } from 'types';
 import { ApplicationColumn } from './components/application-column';
 import CreateJobApplicationModal from './components/create-job-application-modal';
 import JobApplicationDetailModal from './components/job-application-detail-modal';
+import UpdateJobApplicationModal from './components/update-job-application-modal';
 import { JOB_APPLICATION_STATUS_LABELS } from './constants/status';
-import { useDrag } from './scripts/useDrag';
+import { useDrag } from './scripts/use-drag';
 
 const COLUMN_DEFINITIONS = Object.entries(JOB_APPLICATION_STATUS_LABELS).map(([status, title]) => ({
   status: status as JobApplicationStatus,
@@ -32,6 +33,7 @@ const JobApplications: NextPage = () => {
   const [selectedApplication, setSelectedApplication] = useState<JobApplication | null>(null);
   const [openedCreate, setOpenedCreate] = useState(false);
   const [openedDetail, setOpenedDetail] = useState(false);
+  const [openedUpdate, setOpenedUpdate] = useState(false);
   const { data: applications, isLoading } = jobApplicationApi.useList(params);
 
   const columnData = COLUMN_DEFINITIONS.map(({ status, title }) => ({
@@ -91,14 +93,27 @@ const JobApplications: NextPage = () => {
 
       <CreateJobApplicationModal opened={openedCreate} onClose={() => setOpenedCreate(false)} />
       {selectedApplication && (
-        <JobApplicationDetailModal
-          opened={openedDetail}
-          onClose={() => {
-            setOpenedDetail(false);
-            setSelectedApplication(null);
-          }}
-          application={selectedApplication}
-        />
+        <>
+          <JobApplicationDetailModal
+            opened={openedDetail && !openedUpdate}
+            onClose={() => {
+              setOpenedDetail(false);
+              setSelectedApplication(null);
+            }}
+            application={selectedApplication}
+            onUpdate={() => setOpenedUpdate(true)}
+          />
+          <UpdateJobApplicationModal
+            opened={openedUpdate}
+            onClose={() => setOpenedUpdate(false)}
+            application={selectedApplication}
+            onSuccess={(updatedApplication) => {
+              setSelectedApplication(updatedApplication);
+              setOpenedUpdate(false);
+              setOpenedDetail(true);
+            }}
+          />
+        </>
       )}
     </>
   );

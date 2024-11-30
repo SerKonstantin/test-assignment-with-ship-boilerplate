@@ -10,6 +10,7 @@ interface JobApplicationDetailModalProps {
   opened: boolean;
   onClose: () => void;
   application: JobApplication;
+  onUpdate: () => void;
 }
 
 const LabelText = ({ children }: { children: React.ReactNode }) => (
@@ -18,7 +19,7 @@ const LabelText = ({ children }: { children: React.ReactNode }) => (
   </Text>
 );
 
-const JobApplicationDetailModal = ({ opened, onClose, application }: JobApplicationDetailModalProps) => (
+const JobApplicationDetailModal = ({ opened, onClose, application, onUpdate }: JobApplicationDetailModalProps) => (
   <Modal
     opened={opened}
     onClose={onClose}
@@ -50,7 +51,7 @@ const JobApplicationDetailModal = ({ opened, onClose, application }: JobApplicat
       </Group>
 
       <Group justify="flex-end" mt="xl">
-        <Button variant="light" leftSection={<IconPencil size={16} />}>
+        <Button variant="light" leftSection={<IconPencil size={16} />} onClick={onUpdate}>
           Изменить
         </Button>
         <Button color="red" variant="light" leftSection={<IconTrash size={16} />}>
