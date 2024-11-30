@@ -3,7 +3,7 @@ import { NextPage } from 'next';
 import Head from 'next/head';
 import { Button, Group, SimpleGrid, Skeleton, Stack, Title } from '@mantine/core';
 import { useSetState } from '@mantine/hooks';
-import { DragDropContext, DropResult } from '@hello-pangea/dnd';
+import { DragDropContext, DragUpdate, DropResult } from '@hello-pangea/dnd';
 
 import { jobApplicationApi, JobApplicationsListParams } from 'resources/job-application';
 
@@ -85,6 +85,30 @@ const JobApplications: NextPage = () => {
     );
   };
 
+  const handleDragUpdate = (update: DragUpdate) => {
+    if (!update.destination) return;
+
+    const { draggableId, destination } = update;
+    const destinationColumn = columnData.find((col) => col.status === destination.droppableId);
+
+    if (!destinationColumn) return;
+
+    const newSortIndex = calculateSortIndexOnDrag(destinationColumn, destination, draggableId);
+
+    queryClient.setQueryData(['job-applications', params], (old: ListResult<JobApplication>) => ({
+      ...old,
+      results: old.results.map((app) =>
+        app._id === draggableId
+          ? {
+              ...app,
+              status: destination.droppableId as JobApplicationStatus,
+              sortIndex: newSortIndex,
+            }
+          : app,
+      ),
+    }));
+  };
+
   if (isLoading) {
     return (
       <Stack gap="md">
@@ -112,7 +136,7 @@ const JobApplications: NextPage = () => {
           </Group>
         </Group>
 
-        <DragDropContext onDragEnd={handleDragEnd}>
+        <DragDropContext onDragEnd={handleDragEnd} onDragUpdate={handleDragUpdate}>
           <SimpleGrid cols={4}>
             {columnData.map(({ status, title, applications: columnApps }) => (
               <ApplicationColumn
