@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { NextPage } from 'next';
 import Head from 'next/head';
-import { Button, Group, SimpleGrid, Skeleton, Stack, Title } from '@mantine/core';
+import { ActionIcon, Button, Group, SimpleGrid, Skeleton, Stack, TextInput, Title } from '@mantine/core';
 import { useSetState } from '@mantine/hooks';
 import { DragDropContext } from '@hello-pangea/dnd';
+import { IconSearch, IconX } from '@tabler/icons-react';
 
 import { jobApplicationApi, JobApplicationsListParams } from 'resources/job-application';
 
@@ -25,12 +26,13 @@ const COLUMN_DEFINITIONS = Object.entries(JOB_APPLICATION_STATUS_LABELS).map(([s
 }));
 
 const JobApplications: NextPage = () => {
-  // TODO: temporary disable linter here, we will need to set params for search/filter
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [params, setParams] = useSetState<JobApplicationsListParams>({
     searchValue: '',
     sort: { sortIndex: 'asc' },
   });
+  const handleSearch = (value: string) => {
+    setParams({ searchValue: value });
+  };
 
   const [selectedApplication, setSelectedApplication] = useState<JobApplication | null>(null);
   const [openedCreate, setOpenedCreate] = useState(false);
@@ -52,7 +54,7 @@ const JobApplications: NextPage = () => {
     return (
       <Stack gap="md">
         {Array.from(Array(columnData.length), (i) => (
-          <Skeleton key={i} h={60} radius="sm" /> // TODO: add props ?
+          <Skeleton key={i} h={60} radius="sm" />
         ))}
       </Stack>
     );
@@ -68,6 +70,20 @@ const JobApplications: NextPage = () => {
         <Group justify="space-between">
           <Title order={2}>Вакансии</Title>
           <Group>
+            <TextInput
+              w={350}
+              placeholder="Искать"
+              value={params.searchValue}
+              onChange={(event) => handleSearch(event.currentTarget.value)}
+              leftSection={<IconSearch size={16} />}
+              rightSection={
+                params.searchValue && (
+                  <ActionIcon variant="transparent" onClick={() => handleSearch('')}>
+                    <IconX color="gray" stroke={1.5} />
+                  </ActionIcon>
+                )
+              }
+            />
             <Button onClick={() => setOpenedCreate(true)}>Добавить отклик</Button>
             <Button variant="light" color="red">
               Удалить все отказы
