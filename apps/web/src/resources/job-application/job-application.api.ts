@@ -50,3 +50,11 @@ export const useDelete = () =>
       queryClient.invalidateQueries({ queryKey: ['job-applications'] });
     },
   });
+
+export const useDeleteRejected = () =>
+  useMutation<{ deletedCount: number }, ApiError>({
+    mutationFn: () => apiService.post('/job-applications/delete-rejected'),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['job-applications'] });
+    },
+  });

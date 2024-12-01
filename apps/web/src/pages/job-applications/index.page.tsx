@@ -3,10 +3,13 @@ import { NextPage } from 'next';
 import Head from 'next/head';
 import { ActionIcon, Button, Group, SimpleGrid, Skeleton, Stack, TextInput, Title } from '@mantine/core';
 import { useSetState } from '@mantine/hooks';
+import { showNotification } from '@mantine/notifications';
 import { DragDropContext } from '@hello-pangea/dnd';
 import { IconSearch, IconX } from '@tabler/icons-react';
 
 import { jobApplicationApi, JobApplicationsListParams } from 'resources/job-application';
+
+import { handleApiError } from 'utils';
 
 import { JobApplicationStatus } from 'schemas';
 import { JobApplication } from 'types';
@@ -50,6 +53,20 @@ const JobApplications: NextPage = () => {
 
   const { handleDragEnd, handleDragUpdate } = useDrag({ params, columnData });
 
+  const { mutate: deleteRejected, isPending: isDeletingRejected } = jobApplicationApi.useDeleteRejected();
+  const handleDeleteRejected = () => {
+    deleteRejected(undefined, {
+      onSuccess: () => {
+        showNotification({
+          title: 'Успешно',
+          message: 'Все отказы удалены',
+          color: 'green',
+        });
+      },
+      onError: (e) => handleApiError(e),
+    });
+  };
+
   if (isLoading) {
     return (
       <Stack gap="md">
@@ -85,7 +102,7 @@ const JobApplications: NextPage = () => {
               }
             />
             <Button onClick={() => setOpenedCreate(true)}>Добавить отклик</Button>
-            <Button variant="light" color="red">
+            <Button variant="light" color="red" onClick={handleDeleteRejected} loading={isDeletingRejected}>
               Удалить все отказы
             </Button>
           </Group>
