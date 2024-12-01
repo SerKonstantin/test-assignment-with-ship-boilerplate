@@ -67,7 +67,9 @@ const JobApplicationDetailModal = ({ opened, onClose, application, onUpdate }: J
 
           <Group align="flex-start">
             <LabelText>Заметки:</LabelText>
-            <Text style={{ whiteSpace: 'pre-wrap', flex: 1 }}>{application.notes || 'Нет заметок'}</Text>
+            <Text style={{ whiteSpace: 'pre-wrap', flex: 1, overflowWrap: 'anywhere' }}>
+              {application.notes || 'Нет заметок'}
+            </Text>
           </Group>
 
           <Group justify="flex-end" mt="xl">

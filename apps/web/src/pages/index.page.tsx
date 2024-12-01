@@ -1,3 +1,3 @@
-import Home from 'pages/home';
+import JobApplications from './job-applications/index.page';
 
-export default Home;
+export default JobApplications;
